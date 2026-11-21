@@ -54,7 +54,9 @@ export const InversionAlertBanner: React.FC<InversionAlertBannerProps> = ({
         <div className="flex items-center gap-2 self-end md:self-center shrink-0">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white/80 dark:bg-slate-800/80 text-amber-800 dark:text-amber-300 hover:bg-white dark:hover:bg-slate-800 flex items-center gap-1.5 shadow-2xs transition-all"
+            aria-expanded={isExpanded}
+            aria-controls="inversion-breakdown"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white/80 dark:bg-slate-800/80 text-amber-800 dark:text-amber-300 hover:bg-white dark:hover:bg-slate-800 flex items-center gap-1.5 shadow-2xs transition-all focus:ring-2 focus:ring-amber-500"
           >
             <Info className="h-3.5 w-3.5" />
             <span>{isExpanded ? "Hide Science Breakdown" : "Why Is This Happening?"}</span>
@@ -65,7 +67,7 @@ export const InversionAlertBanner: React.FC<InversionAlertBannerProps> = ({
 
       {/* Expandable Scientific Explainer */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-amber-200/80 dark:border-amber-800/60 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700 dark:text-slate-300 animate-fadeIn">
+        <div id="inversion-breakdown" className="mt-4 pt-4 border-t border-amber-200/80 dark:border-amber-800/60 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700 dark:text-slate-300 animate-fadeIn">
           <div className="p-3 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-amber-100 dark:border-amber-900/40">
             <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-300 mb-1">
               <ArrowDownCircle className="h-4 w-4 text-amber-600" />

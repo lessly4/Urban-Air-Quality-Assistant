@@ -1,14 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { fetchAirQualityAndWeather } from "@/services/openMeteo";
+import { airQualityRateLimiter, getClientIp } from "@/utils/rateLimiter";
 
 const AirQualityQuerySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lon: z.coerce.number().min(-180).max(180),
-  timezone: z.string().optional().default("auto"),
+  timezone: z.string().trim().max(100).optional().default("auto"),
 });
 
 export async function GET(request: NextRequest) {
+  const clientIp = getClientIp(request.headers);
+  const rateLimit = airQualityRateLimiter.check(clientIp);
+
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down.", retryAfter: Math.ceil(rateLimit.resetInMs / 1000) },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": Math.ceil(rateLimit.resetInMs / 1000).toString(),
+          "X-RateLimit-Limit": rateLimit.limit.toString(),
+          "X-RateLimit-Remaining": "0",
+        },
+      }
+    );
+  }
+
   try {
     const rawLat = request.nextUrl.searchParams.get("lat");
     const rawLon = request.nextUrl.searchParams.get("lon");
@@ -30,7 +48,13 @@ export async function GET(request: NextRequest) {
     const { lat, lon, timezone: tz } = validation.data;
     const data = await fetchAirQualityAndWeather(lat, lon, tz);
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        "X-RateLimit-Limit": rateLimit.limit.toString(),
+        "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+      },
+    });
   } catch (error: unknown) {
     const err = error as { digest?: string; name?: string };
     if (err?.digest === "NEXT_PRERENDER_INTERRUPTED" || err?.name === "DynamicServerError") {

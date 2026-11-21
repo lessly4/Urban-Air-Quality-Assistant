@@ -90,10 +90,17 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
     <div className="space-y-5">
       {/* Pillar Tabs & Generator Badge */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 w-fit">
+        <div
+          role="tablist"
+          aria-label="Filter recommendations by pillar"
+          className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 w-fit"
+        >
           {pillars.map((tab) => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={selectedPillar === tab.id}
+              aria-controls="pillar-cards-grid"
               onClick={() => setSelectedPillar(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 selectedPillar === tab.id
@@ -137,7 +144,7 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
           <p className="text-sm text-slate-500">No actions found for this pillar filter.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div id="pillar-cards-grid" role="region" aria-label="Action cards" className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {filtered.map((item) => (
             <div
               key={item.id}
@@ -247,7 +254,9 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
                     onClick={() =>
                       setExpandedWhyId(expandedWhyId === item.id ? null : item.id)
                     }
-                    className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 font-medium transition-colors"
+                    aria-expanded={expandedWhyId === item.id}
+                    aria-controls={`why-science-${item.id}`}
+                    className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 font-medium transition-colors focus:ring-2 focus:ring-teal-500"
                   >
                     <span>{expandedWhyId === item.id ? "Hide Science" : "Why This Works"}</span>
                     {expandedWhyId === item.id ? (
@@ -261,7 +270,8 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
                     onClick={() =>
                       setActiveModalMetric({ metrics: item.impact, title: item.title })
                     }
-                    className="text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-semibold flex items-center gap-1 hover:underline"
+                    aria-label={`Open direct impact calculation breakdown for ${item.title}`}
+                    className="text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-semibold flex items-center gap-1 hover:underline focus:ring-2 focus:ring-teal-500"
                   >
                     <Calculator className="h-3.5 w-3.5" />
                     <span>Direct Impact Math</span>
@@ -270,7 +280,12 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
 
                 {/* Expandable Why Science */}
                 {expandedWhyId === item.id && (
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 leading-relaxed animate-fadeIn">
+                  <div
+                    id={`why-science-${item.id}`}
+                    role="region"
+                    aria-label="Epidemiological and atmospheric rationale"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 leading-relaxed animate-fadeIn"
+                  >
                     <span className="font-bold text-slate-900 dark:text-slate-200 block mb-1">
                       Epidemiological & Atmospheric Rationale:
                     </span>

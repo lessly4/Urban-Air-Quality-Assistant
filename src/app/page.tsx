@@ -1,13 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  GeoLocation,
-  CurrentAirQuality,
-  HourlyAirQuality,
-  HouseholdProfile,
-  RecommendationsResponse,
-} from "@/types/airQuality";
+import React from "react";
+import { useAirQuality } from "@/hooks/useAirQuality";
 import { AirQualityHeader } from "@/components/AirQualityHeader";
 import { AQIOverviewCard } from "@/components/AQIOverviewCard";
 import { InversionAlertBanner } from "@/components/InversionAlertBanner";
@@ -17,187 +11,39 @@ import { ActionCardsSection } from "@/components/ActionCardsSection";
 import { CommunityImpactSummary } from "@/components/CommunityImpactSummary";
 import { AlertCircle, RefreshCw, Sparkles, Shield } from "lucide-react";
 
-const DEFAULT_LOCATION: GeoLocation = {
-  name: "Delhi",
-  country: "India",
-  latitude: 28.65195,
-  longitude: 77.23149,
-  admin1: "Delhi",
-  timezone: "Asia/Kolkata",
-  countryCode: "IN",
-};
-
-const DEFAULT_PROFILE: HouseholdProfile = {
-  vulnerabilities: ["children", "asthma_respiratory"],
-  commuteMode: "two_wheeler_open",
-  heatingFuel: "biomass_wood_coal",
-  cookingFuel: "lpg_piped_gas",
-  homePurifierSetup: "none",
-  ventilationHabit: "morning_airing",
-  commuteDistanceKm: 12,
-  roomSizeM2: 30,
-};
-
 export default function Home() {
-  const [location, setLocation] = useState<GeoLocation>(DEFAULT_LOCATION);
-  const [currentAQ, setCurrentAQ] = useState<CurrentAirQuality | null>(null);
-  const [hourly, setHourly] = useState<HourlyAirQuality[]>([]);
-  const [profile, setProfile] = useState<HouseholdProfile>(DEFAULT_PROFILE);
-  const [recommendationsData, setRecommendationsData] =
-    useState<RecommendationsResponse | null>(null);
-
-  const [isLoadingAQ, setIsLoadingAQ] = useState<boolean>(true);
-  const [isLoadingRecs, setIsLoadingRecs] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // 1. Fetch GenAI + Deterministic Recommendations
-  const fetchRecommendations = useCallback(
-    async (
-      locName: string,
-      aq: CurrentAirQuality,
-      hourlyList: HourlyAirQuality[],
-      currentProf: HouseholdProfile
-    ) => {
-      setIsLoadingRecs(true);
-      try {
-        const res = await fetch("/api/recommendations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            locationName: locName,
-            currentAQ: aq,
-            hourly: hourlyList,
-            profile: currentProf,
-          }),
-        });
-
-        if (!res.ok) {
-          throw new Error(`Recommendations failed with status: ${res.status}`);
-        }
-
-        const data: RecommendationsResponse = await res.json();
-        setRecommendationsData(data);
-      } catch (err) {
-        console.error("Recommendations error:", err);
-      } finally {
-        setIsLoadingRecs(false);
-      }
-    },
-    []
-  );
-
-  // 2. Fetch Air Quality & Weather
-  const loadAirQuality = useCallback(
-    async (loc: GeoLocation, currentProf: HouseholdProfile) => {
-      setIsLoadingAQ(true);
-      setErrorMessage(null);
-
-      try {
-        const res = await fetch(
-          `/api/air-quality?lat=${loc.latitude}&lon=${loc.longitude}&timezone=${encodeURIComponent(
-            loc.timezone || "auto"
-          )}`
-        );
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch air quality data (status ${res.status})`);
-        }
-
-        const data = await res.json();
-        setCurrentAQ(data.current);
-        setHourly(data.hourly || []);
-
-        await fetchRecommendations(loc.name, data.current, data.hourly || [], currentProf);
-      } catch (err: unknown) {
-        console.error("Failed to load air quality:", err);
-        setErrorMessage(
-          err instanceof Error
-            ? err.message
-            : "Failed to connect to Open-Meteo meteorological API."
-        );
-      } finally {
-        setIsLoadingAQ(false);
-      }
-    },
-    [fetchRecommendations]
-  );
-
-  // Synchronize on location or profile mount/change
-  useEffect(() => {
-    let isCancelled = false;
-
-    async function initialLoad() {
-      try {
-        const res = await fetch(
-          `/api/air-quality?lat=${location.latitude}&lon=${location.longitude}&timezone=${encodeURIComponent(
-            location.timezone || "auto"
-          )}`
-        );
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch air quality data (status ${res.status})`);
-        }
-
-        const data = await res.json();
-        if (isCancelled) return;
-
-        setCurrentAQ(data.current);
-        setHourly(data.hourly || []);
-
-        const recRes = await fetch("/api/recommendations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            locationName: location.name,
-            currentAQ: data.current,
-            hourly: data.hourly || [],
-            profile,
-          }),
-        });
-
-        if (recRes.ok && !isCancelled) {
-          const recData = await recRes.json();
-          setRecommendationsData(recData);
-        }
-      } catch (err: unknown) {
-        if (!isCancelled) {
-          setErrorMessage(
-            err instanceof Error
-              ? err.message
-              : "Failed to connect to Open-Meteo meteorological API."
-          );
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoadingAQ(false);
-        }
-      }
-    }
-
-    initialLoad();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [location, profile]);
-
-  // Handle location selection
-  const handleSelectLocation = (newLoc: GeoLocation) => {
-    setLocation(newLoc);
-  };
-
-  // Handle profile change
-  const handleProfileChange = (updated: HouseholdProfile) => {
-    setProfile(updated);
-  };
+  const {
+    location,
+    profile,
+    currentAQ,
+    hourly,
+    recommendationsData,
+    isLoadingAQ,
+    isLoadingRecs,
+    errorMessage,
+    refresh,
+    updateLocation,
+    updateProfile,
+  } = useAirQuality();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors">
+      {/* Screen reader live region for background updates */}
+      <div className="sr-only" role="status" aria-live="polite">
+        {isLoadingAQ
+          ? `Loading real-time air quality data for ${location.name}...`
+          : currentAQ
+          ? `Air quality updated for ${location.name}: AQI ${currentAQ.aqi}, ${currentAQ.aqiCategory}. ${
+              currentAQ.inversionDetected ? "Thermal inversion detected." : ""
+            }`
+          : ""}
+      </div>
+
       {/* Top Navigation & City Search */}
       <AirQualityHeader
         currentLocationName={location.name}
-        onSelectLocation={handleSelectLocation}
-        onRefresh={() => loadAirQuality(location, profile)}
+        onSelectLocation={updateLocation}
+        onRefresh={refresh}
         isRefreshing={isLoadingAQ}
         lastUpdated={currentAQ?.updatedAt}
         inversionDetected={currentAQ?.inversionDetected}
@@ -207,14 +53,17 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Error Notification */}
         {errorMessage && (
-          <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200 flex items-center justify-between gap-3 text-xs">
+          <div
+            role="alert"
+            className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200 flex items-center justify-between gap-3 text-xs"
+          >
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" aria-hidden="true" />
               <span>{errorMessage}</span>
             </div>
             <button
-              onClick={() => loadAirQuality(location, profile)}
-              className="px-3 py-1 rounded-lg bg-rose-600 text-white font-medium hover:bg-rose-700 transition-colors"
+              onClick={refresh}
+              className="px-3 py-1 rounded-lg bg-rose-600 text-white font-medium hover:bg-rose-700 transition-colors focus:ring-2 focus:ring-rose-500"
             >
               Retry
             </button>
@@ -223,8 +72,8 @@ export default function Home() {
 
         {/* Loading state for initial fetch */}
         {isLoadingAQ && !currentAQ ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <RefreshCw className="h-8 w-8 text-teal-600 animate-spin" />
+          <div className="flex flex-col items-center justify-center py-24 space-y-4" role="status">
+            <RefreshCw className="h-8 w-8 text-teal-600 animate-spin" aria-hidden="true" />
             <p className="text-sm font-medium text-slate-500">
               Retrieving live atmospheric boundary layer & AQI data from Open-Meteo...
             </p>
@@ -251,15 +100,15 @@ export default function Home() {
             {/* 4. Interactive Household Profile Selector */}
             <HouseholdProfileDrawer
               profile={profile}
-              onChange={handleProfileChange}
+              onChange={updateProfile}
             />
 
             {/* 5. GenAI + Deterministic Action Engine (3 Pillars) */}
-            <div className="pt-2">
+            <section className="pt-2" aria-labelledby="action-engine-title">
               <div className="mb-4">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50 tracking-tight">
+                  <Sparkles className="h-5 w-5 text-teal-600 dark:text-teal-400" aria-hidden="true" />
+                  <h2 id="action-engine-title" className="text-xl font-bold text-slate-900 dark:text-slate-50 tracking-tight">
                     Tailored Action Engine
                   </h2>
                 </div>
@@ -282,7 +131,7 @@ export default function Home() {
                 isLoading={isLoadingRecs}
                 source={recommendationsData?.source}
               />
-            </div>
+            </section>
 
             {/* 6. Community Impact Scaling Card */}
             {recommendationsData?.aggregatedImpact && (
@@ -300,7 +149,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-slate-500 dark:text-slate-400 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-teal-600" />
+              <Shield className="h-4 w-4 text-teal-600" aria-hidden="true" />
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 Urban Air Quality Assistant
               </span>

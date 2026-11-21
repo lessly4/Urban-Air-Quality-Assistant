@@ -145,6 +145,8 @@ export const HourlyTimeline: React.FC<HourlyTimelineProps> = ({
               <button
                 key={hour.time}
                 onClick={() => setSelectedHourIndex(isSelected ? null : idx)}
+                aria-label={`${formatHourLabel(hour.time)}: PM2.5 ${Math.round(hour.pm25)} micrograms per cubic meter, safety rating ${hour.safetyLevel}${hour.isTrappingWindow ? ", winter inversion trap" : ""}`}
+                aria-pressed={isSelected}
                 className={`flex-1 flex flex-col items-center justify-end h-full group focus:outline-none transition-all rounded-t-md p-1 ${
                   isSelected
                     ? "bg-slate-100 dark:bg-slate-800/80 ring-2 ring-teal-500"
