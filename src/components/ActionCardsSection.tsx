@@ -66,12 +66,12 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
   const getPriorityStyle = (priority: string) => {
     switch (priority) {
       case "critical":
-        return "bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800";
+        return "bg-rose-950/70 text-rose-300 border-rose-500/40";
       case "high":
-        return "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800";
+        return "bg-amber-950/70 text-amber-300 border-amber-500/40";
       case "medium":
       default:
-        return "bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800";
+        return "bg-[#2F4A3F]/70 text-[#DCE7DF] border-[#94AE9F]/40";
     }
   };
 
@@ -93,7 +93,7 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
         <div
           role="tablist"
           aria-label="Filter recommendations by pillar"
-          className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 w-fit"
+          className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl bg-[#1C2E27]/70 border border-[#2F4A3F]/80 w-fit backdrop-blur-md"
         >
           {pillars.map((tab) => (
             <button
@@ -104,8 +104,8 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
               onClick={() => setSelectedPillar(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 selectedPillar === tab.id
-                  ? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-300 shadow-xs border border-slate-200 dark:border-slate-700"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  ? "bg-[#2F4A3F] text-[#DCE7DF] border border-[#94AE9F]/60 shadow-[0_0_12px_rgba(148,174,159,0.18)]"
+                  : "text-[#94AE9F] hover:text-[#DCE7DF] border border-transparent"
               }`}
             >
               {tab.icon}
@@ -116,13 +116,13 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
 
         <div className="flex items-center gap-2">
           {source === "genai" ? (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-              <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-[#1C2E27] text-[#DCE7DF] border border-[#94AE9F]/50">
+              <Sparkles className="h-3.5 w-3.5 text-[#94AE9F]" />
               GenAI Structured Engine
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-              <Shield className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-[#1C2E27] text-[#94AE9F] border border-[#2F4A3F]">
+              <Shield className="h-3.5 w-3.5 text-[#94AE9F]" />
               Deterministic Rule Engine (Zero-Latency)
             </span>
           )}
@@ -131,54 +131,54 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
 
       {/* Cards Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {[1, 2, 3, 4].map((n) => (
             <div
               key={n}
-              className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse border border-slate-200 dark:border-slate-800"
+              className="h-64 rounded-2xl bg-[#1C2E27]/40 animate-pulse border border-[#2F4A3F]/60"
             />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-          <p className="text-sm text-slate-500">No actions found for this pillar filter.</p>
+        <div className="text-center py-12 rounded-2xl border border-dashed border-[#2F4A3F] bg-[#1C2E27]/30 p-8">
+          <p className="text-sm text-[#94AE9F]">No actions found for this pillar filter.</p>
         </div>
       ) : (
         <div id="pillar-cards-grid" role="region" aria-label="Action cards" className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {filtered.map((item) => (
             <div
               key={item.id}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex flex-col justify-between hover:border-teal-500/50 transition-all group"
+              className="bg-[#1C2E27]/60 backdrop-blur-md rounded-2xl border border-[#2F4A3F]/80 p-5 shadow-xl flex flex-col justify-between hover:border-[#94AE9F]/70 transition-all group"
             >
               <div>
                 {/* Header tags */}
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${getPriorityStyle(
+                      className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${getPriorityStyle(
                         item.priority
                       )}`}
                     >
                       {item.priority} priority
                     </span>
-                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+                    <span className="text-[10px] font-semibold text-[#94AE9F] px-2.5 py-0.5 rounded-full bg-[#0F1A16]/60 border border-[#2F4A3F]/70">
                       {getPillarLabel(item.pillar)}
                     </span>
                   </div>
 
                   {item.timingWindow && (
-                    <span className="text-[11px] text-teal-700 dark:text-teal-400 font-medium flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                    <span className="text-[11px] text-[#94AE9F] font-medium flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-[#94AE9F]" />
                       {item.timingWindow}
                     </span>
                   )}
                 </div>
 
                 {/* Title & Summary */}
-                <h4 className="text-base font-bold text-slate-900 dark:text-slate-50 tracking-tight group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                <h4 className="text-base font-bold text-[#DCE7DF] tracking-tight group-hover:text-white transition-colors">
                   {item.title}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
+                <p className="text-xs text-[#94AE9F] mt-1.5 leading-relaxed">
                   {item.summary}
                 </p>
 
@@ -187,9 +187,9 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
                   {item.actionSteps.map((step, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300"
+                      className="flex items-start gap-2 text-xs text-[#DCE7DF]/90"
                     >
-                      <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-4 w-4 text-[#94AE9F] shrink-0 mt-0.5" />
                       <span className="leading-snug">{step}</span>
                     </div>
                   ))}
@@ -197,51 +197,51 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
               </div>
 
               {/* Bottom Section: Direct Impact Metrics & Explainer Button */}
-              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="mt-5 pt-4 border-t border-[#2F4A3F]/60 space-y-3">
                 {/* Metric Badges */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/60">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 block">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-[#0F1A16]/65 border border-[#2F4A3F]/80">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#557566] block">
                       Inhalation Cut
                     </span>
-                    <span className="text-sm font-extrabold text-teal-700 dark:text-teal-300">
+                    <span className="text-sm font-extrabold text-[#DCE7DF]">
                       -{item.impact.exposureReductionPercent}%
                     </span>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block">
+                  <div className="p-2.5 rounded-xl bg-[#0F1A16]/65 border border-[#2F4A3F]/80">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#557566] block">
                       PM2.5 Saved
                     </span>
-                    <span className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300">
+                    <span className="text-sm font-extrabold text-emerald-300">
                       {item.impact.doseSavedUgPerDay} µg/day
                     </span>
                   </div>
 
                   {item.impact.co2SavedKgPerWeek > 0 ? (
-                    <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/60 col-span-2 sm:col-span-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300 block">
+                    <div className="p-2.5 rounded-xl bg-[#0F1A16]/65 border border-[#2F4A3F]/80 col-span-2 sm:col-span-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#557566] block">
                         CO2 Avoided
                       </span>
-                      <span className="text-sm font-extrabold text-sky-700 dark:text-sky-300">
+                      <span className="text-sm font-extrabold text-[#94AE9F]">
                         {item.impact.co2SavedKgPerWeek} kg/wk
                       </span>
                     </div>
                   ) : item.impact.pm25EmissionsAvoidedKgPerWeek > 0 ? (
-                    <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/60 col-span-2 sm:col-span-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 block">
+                    <div className="p-2.5 rounded-xl bg-[#0F1A16]/65 border border-[#2F4A3F]/80 col-span-2 sm:col-span-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#557566] block">
                         Direct PM Avoided
                       </span>
-                      <span className="text-sm font-extrabold text-amber-700 dark:text-amber-300">
+                      <span className="text-sm font-extrabold text-amber-300">
                         {Math.round(item.impact.pm25EmissionsAvoidedKgPerWeek * 1000)} g/wk
                       </span>
                     </div>
                   ) : (
-                    <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 col-span-2 sm:col-span-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                    <div className="p-2.5 rounded-xl bg-[#0F1A16]/65 border border-[#2F4A3F]/80 col-span-2 sm:col-span-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#557566] block">
                         Target Clean Air
                       </span>
-                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="text-sm font-semibold text-[#94AE9F]">
                         Sanctuary Zone
                       </span>
                     </div>
@@ -256,7 +256,7 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
                     }
                     aria-expanded={expandedWhyId === item.id}
                     aria-controls={`why-science-${item.id}`}
-                    className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 font-medium transition-colors focus:ring-2 focus:ring-teal-500"
+                    className="text-[#94AE9F] hover:text-[#DCE7DF] flex items-center gap-1 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#94AE9F]/40 rounded-md px-1"
                   >
                     <span>{expandedWhyId === item.id ? "Hide Science" : "Why This Works"}</span>
                     {expandedWhyId === item.id ? (
@@ -271,9 +271,9 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
                       setActiveModalMetric({ metrics: item.impact, title: item.title })
                     }
                     aria-label={`Open direct impact calculation breakdown for ${item.title}`}
-                    className="text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-semibold flex items-center gap-1 hover:underline focus:ring-2 focus:ring-teal-500"
+                    className="text-[#DCE7DF] hover:text-white font-semibold flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#2F4A3F]/50 border border-[#94AE9F]/40 hover:border-[#94AE9F] transition-all focus:outline-none focus:ring-2 focus:ring-[#94AE9F]/40"
                   >
-                    <Calculator className="h-3.5 w-3.5" />
+                    <Calculator className="h-3.5 w-3.5 text-[#94AE9F]" />
                     <span>Direct Impact Math</span>
                   </button>
                 </div>
@@ -284,10 +284,10 @@ export const ActionCardsSection: React.FC<ActionCardsSectionProps> = ({
                     id={`why-science-${item.id}`}
                     role="region"
                     aria-label="Epidemiological and atmospheric rationale"
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 leading-relaxed animate-fadeIn"
+                    className="p-3.5 rounded-xl bg-[#0F1A16]/75 border border-[#2F4A3F] text-xs text-[#94AE9F] leading-relaxed animate-fadeIn"
                   >
-                    <span className="font-bold text-slate-900 dark:text-slate-200 block mb-1">
-                      Epidemiological & Atmospheric Rationale:
+                    <span className="font-bold text-[#DCE7DF] block mb-1">
+                      Epidemiological &amp; Atmospheric Rationale:
                     </span>
                     {item.evidenceWhy}
                   </div>

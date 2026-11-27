@@ -5,15 +5,50 @@
 :root {
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --forest-canvas: #0F1A16;
+  --forest-surface: #1C2E27;
+  --forest-border: #2F4A3F;
+  --forest-muted: #557566;
+  --forest-sage: #94AE9F;
+  --forest-bright: #DCE7DF;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc; /* slate-50 always light by default */
-  color: #0f172a; /* slate-900 */
+  background-color: #0F1A16;
+  color: #DCE7DF;
 }
 
-.dark body {
-  background-color: #020617; /* slate-950 */
-  color: #f1f5f9; /* slate-100 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.22s ease-out forwards;
+}
+
+/* Custom subtle dark-forest scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0F1A16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2F4A3F;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #557566;
 }
