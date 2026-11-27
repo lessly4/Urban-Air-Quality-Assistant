@@ -83,25 +83,31 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
   };
 
   const pillBase =
-    "inline-flex items-center gap-2 px-3.5 py-2 rounded-full border text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-[#94AE9F]/40";
+    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[#94AE9F]/40";
   const pillActive =
-    "border-[#94AE9F] bg-[#2F4A3F]/50 text-[#DCE7DF] shadow-[0_0_14px_rgba(148,174,159,0.22)]";
+    "border-[#94AE9F] bg-[#2F4A3F]/60 text-[#DCE7DF] shadow-[0_0_12px_rgba(148,174,159,0.2)]";
   const pillInactive =
-    "border-[#2F4A3F] bg-[#0F1A16]/50 text-[#94AE9F] hover:border-[#557566] hover:text-[#DCE7DF]";
+    "border-[#2F4A3F]/80 bg-[#0F1A16]/45 text-[#94AE9F] hover:border-[#557566] hover:text-[#DCE7DF]";
 
   return (
-    <div className="bg-[#1C2E27]/60 backdrop-blur-md rounded-2xl border border-[#2F4A3F]/80 p-6 shadow-xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#2F4A3F]/60">
-        <div>
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4 text-[#94AE9F]" />
-            <h3 className="text-base font-bold text-[#DCE7DF]">
+    <section
+      aria-label="Personalization and Household Profile"
+      className="bg-[#1C2E27]/60 backdrop-blur-md rounded-2xl border border-[#2F4A3F]/80 shadow-xl overflow-hidden"
+    >
+      {/* Compact Header Bar */}
+      <div className="px-5 py-4 border-b border-[#2F4A3F]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-[#2F4A3F]/70 border border-[#94AE9F]/30 flex items-center justify-center text-[#94AE9F] shrink-0">
+            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-[#DCE7DF] tracking-tight">
               Personalization &amp; Household Profile
             </h3>
+            <p className="text-[11px] text-[#94AE9F]/80">
+              Unified control panel driving deterministic dose math &amp; tailored guidance
+            </p>
           </div>
-          <p className="text-xs text-[#94AE9F]/80 mt-0.5">
-            Tap options below to tailor your action plan and recalculate exact inhalation exposure math
-          </p>
         </div>
 
         {/* Quick Presets */}
@@ -110,45 +116,45 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
           <button
             type="button"
             onClick={() => applyPreset("vulnerable_family")}
-            className="text-[11px] px-3 py-1 rounded-full bg-[#0F1A16]/60 border border-[#2F4A3F] text-[#94AE9F] hover:border-[#94AE9F] hover:text-[#DCE7DF] font-medium transition-all"
+            className="text-[11px] px-2.5 py-1 rounded-full bg-[#0F1A16]/60 border border-[#2F4A3F] text-[#94AE9F] hover:border-[#94AE9F] hover:text-[#DCE7DF] font-medium transition-all"
           >
             Family + Asthma
           </button>
           <button
             type="button"
             onClick={() => applyPreset("commuter_kerosene")}
-            className="text-[11px] px-3 py-1 rounded-full bg-[#0F1A16]/60 border border-[#2F4A3F] text-[#94AE9F] hover:border-[#94AE9F] hover:text-[#DCE7DF] font-medium transition-all"
+            className="text-[11px] px-2.5 py-1 rounded-full bg-[#0F1A16]/60 border border-[#2F4A3F] text-[#94AE9F] hover:border-[#94AE9F] hover:text-[#DCE7DF] font-medium transition-all"
           >
             Commuter + Solid Fuel
           </button>
           <button
             type="button"
             onClick={() => applyPreset("clean_apartment")}
-            className="text-[11px] px-3 py-1 rounded-full bg-[#0F1A16]/60 border border-[#2F4A3F] text-[#94AE9F] hover:border-[#94AE9F] hover:text-[#DCE7DF] font-medium transition-all"
+            className="text-[11px] px-2.5 py-1 rounded-full bg-[#0F1A16]/60 border border-[#2F4A3F] text-[#94AE9F] hover:border-[#94AE9F] hover:text-[#DCE7DF] font-medium transition-all"
           >
             Electrified + HEPA
           </button>
         </div>
       </div>
 
-      <div className="mt-5 space-y-5">
-        {/* 1. Sensitivity Pills */}
-        <div>
-          <span className="text-[11px] font-bold text-[#557566] uppercase tracking-wider flex items-center gap-1.5 mb-2.5">
-            <Users className="h-3.5 w-3.5 text-[#94AE9F]" />
-            Sensitivity
-          </span>
-          <div className="flex flex-wrap gap-2">
+      {/* Unified Report-Style Rows */}
+      <div className="divide-y divide-[#2F4A3F]/60">
+        {/* Row 1: Sensitivity */}
+        <div className="px-5 py-3.5 grid grid-cols-1 md:grid-cols-12 gap-3 md:items-center">
+          <div className="md:col-span-3 flex items-center gap-2 text-xs font-semibold text-[#DCE7DF]">
+            <Users className="h-4 w-4 text-[#94AE9F] shrink-0" aria-hidden="true" />
+            <span>Household Sensitivity</span>
+          </div>
+          <div className="md:col-span-9 flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => onChange({ ...profile, vulnerabilities: [] })}
               aria-pressed={isStandardSensitivity}
               className={`${pillBase} ${isStandardSensitivity ? pillActive : pillInactive}`}
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Standard</span>
             </button>
-
             {[
               { id: "children" as VulnerabilityType, label: "Children (<5 yrs)", icon: <Baby className="h-3.5 w-3.5" /> },
               { id: "elderly" as VulnerabilityType, label: "Elderly (65+)", icon: <Users className="h-3.5 w-3.5" /> },
@@ -173,13 +179,13 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
           </div>
         </div>
 
-        {/* 2. Commute Style & HEPA Purifier */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div>
-            <span className="text-[11px] font-bold text-[#557566] uppercase tracking-wider flex items-center gap-1.5 mb-2.5">
-              <Car className="h-3.5 w-3.5 text-[#94AE9F]" />
-              Commute Style
-            </span>
+        {/* Row 2: Commute & HEPA Purifier */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-[#2F4A3F]/60">
+          <div className="px-5 py-3.5 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#DCE7DF]">
+              <Car className="h-4 w-4 text-[#94AE9F] shrink-0" aria-hidden="true" />
+              <span>Primary Commute Mode</span>
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { id: "car_windows_shut" as CommuteMode, label: "Car (AC)", icon: <Car className="h-3.5 w-3.5" /> },
@@ -205,11 +211,11 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
             </div>
           </div>
 
-          <div>
-            <span className="text-[11px] font-bold text-[#557566] uppercase tracking-wider flex items-center gap-1.5 mb-2.5">
-              <Shield className="h-3.5 w-3.5 text-[#94AE9F]" />
-              HEPA Air Purifier
-            </span>
+          <div className="px-5 py-3.5 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#DCE7DF]">
+              <Shield className="h-4 w-4 text-[#94AE9F] shrink-0" aria-hidden="true" />
+              <span>HEPA Air Purifier Setup</span>
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { id: "none" as HomePurifierSetup, label: "None" },
@@ -226,7 +232,7 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
                     aria-pressed={active}
                     className={`${pillBase} ${active ? pillActive : pillInactive}`}
                   >
-                    <Shield className="h-3.5 w-3.5" />
+                    <Shield className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>{p.label}</span>
                   </button>
                 );
@@ -235,13 +241,13 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
           </div>
         </div>
 
-        {/* 3. Household Fuels (Heating & Cooking) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div>
-            <span className="text-[11px] font-bold text-[#557566] uppercase tracking-wider flex items-center gap-1.5 mb-2.5">
-              <Flame className="h-3.5 w-3.5 text-[#94AE9F]" />
-              Space Heating Fuel
-            </span>
+        {/* Row 3: Space Heating & Cooking Fuel */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-[#2F4A3F]/60">
+          <div className="px-5 py-3.5 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#DCE7DF]">
+              <Flame className="h-4 w-4 text-[#94AE9F] shrink-0" aria-hidden="true" />
+              <span>Space Heating Fuel</span>
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { id: "electric_heatpump" as HeatingFuel, label: "Electric / Heat Pump", icon: <Zap className="h-3.5 w-3.5" /> },
@@ -267,11 +273,11 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
             </div>
           </div>
 
-          <div>
-            <span className="text-[11px] font-bold text-[#557566] uppercase tracking-wider flex items-center gap-1.5 mb-2.5">
-              <Utensils className="h-3.5 w-3.5 text-[#94AE9F]" />
-              Cooking Fuel
-            </span>
+          <div className="px-5 py-3.5 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#DCE7DF]">
+              <Utensils className="h-4 w-4 text-[#94AE9F] shrink-0" aria-hidden="true" />
+              <span>Cooking Stovetop Fuel</span>
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { id: "electric_induction" as CookingFuel, label: "Electric / Induction", icon: <Zap className="h-3.5 w-3.5" /> },
@@ -297,6 +303,6 @@ export const HouseholdProfileDrawer: React.FC<HouseholdProfileDrawerProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

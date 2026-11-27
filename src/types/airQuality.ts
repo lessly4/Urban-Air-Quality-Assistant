@@ -286,3 +286,40 @@ export const RecommendationsRequestSchema = z.object({
   hourly: z.array(HourlyAirQualitySchema),
   locationName: z.string().optional().default("Current Location"),
 });
+
+// --- Global Air Quality News ---
+export type NewsCategory = "AQI" | "Pollution" | "Health" | "Policy";
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  imageUrl: string | null;
+  source: string;
+  publishedAt: string;
+  category: NewsCategory;
+}
+
+export const NewsArticleSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  url: z.string().url(),
+  imageUrl: z.string().nullable(),
+  source: z.string(),
+  publishedAt: z.string(),
+  category: z.enum(["AQI", "Pollution", "Health", "Policy"]),
+});
+
+export interface NewsResponse {
+  articles: NewsArticle[];
+  source: "gnews" | "newsapi" | "rss_fallback";
+  fetchedAt: string;
+}
+
+export const NewsResponseSchema = z.object({
+  articles: z.array(NewsArticleSchema),
+  source: z.enum(["gnews", "newsapi", "rss_fallback"]),
+  fetchedAt: z.string(),
+});

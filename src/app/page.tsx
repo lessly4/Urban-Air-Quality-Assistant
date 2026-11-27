@@ -9,6 +9,7 @@ import { HourlyTimeline } from "@/components/HourlyTimeline";
 import { HouseholdProfileDrawer } from "@/components/HouseholdProfileDrawer";
 import { ActionCardsSection } from "@/components/ActionCardsSection";
 import { CommunityImpactSummary } from "@/components/CommunityImpactSummary";
+import { AirQualityNewsSection } from "@/components/AirQualityNewsSection";
 import {
   AlertCircle,
   RefreshCw,
@@ -16,9 +17,10 @@ import {
   Shield,
   Activity,
   Calculator,
+  Newspaper,
 } from "lucide-react";
 
-type DashboardView = "live_forecast" | "action_plan" | "community_math";
+type DashboardView = "live_forecast" | "action_plan" | "community_math" | "global_news";
 
 export default function Home() {
   const {
@@ -52,6 +54,11 @@ export default function Home() {
       id: "community_math",
       label: "Community & Impact Math",
       icon: <Calculator className="h-4 w-4" />,
+    },
+    {
+      id: "global_news",
+      label: "Global Air News",
+      icon: <Newspaper className="h-4 w-4" />,
     },
   ];
 
@@ -236,6 +243,18 @@ export default function Home() {
                     Calculating community impact metrics...
                   </div>
                 )}
+              </section>
+            )}
+
+            {/* VIEW 4: Global Air News */}
+            {activeView === "global_news" && (
+              <section
+                id="tabpanel-global_news"
+                role="tabpanel"
+                aria-label="Global Air Quality News"
+                className="animate-fadeIn"
+              >
+                <AirQualityNewsSection />
               </section>
             )}
           </>

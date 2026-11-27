@@ -118,6 +118,11 @@ export const recommendationsRateLimiter = new SlidingWindowRateLimiter({
   maxRequests: 25, // 25 requests per minute per IP
 });
 
+export const newsRateLimiter = new SlidingWindowRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 20, // 20 requests per minute per IP
+});
+
 /**
  * Extracts client IP from standard Next.js request headers
  */
