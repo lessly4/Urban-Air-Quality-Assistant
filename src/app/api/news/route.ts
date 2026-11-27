@@ -14,6 +14,9 @@ const NewsQuerySchema = z.object({
     .max(120)
     .optional()
     .default('("air quality" OR "air pollution" OR PM2.5 OR smog OR AQI)'),
+  city: z.string().trim().max(80).optional(),
+  country: z.string().trim().max(80).optional(),
+  location: z.string().trim().max(100).optional(),
 });
 
 const RELEVANCE_KEYWORDS = [
@@ -88,17 +91,20 @@ function sortArticlesByRelevanceAndDate(articles: NewsArticle[]): NewsArticle[] 
     const aTime = new Date(a.publishedAt).getTime() || 0;
     const bTime = new Date(b.publishedAt).getTime() || 0;
 
-    // Prioritize latest articles, breaking ties or boosting strong air quality matches
     const aRank = aTime + aScore * 3_600_000;
     const bRank = bTime + bScore * 3_600_000;
     return bRank - aRank;
   });
 }
 
-async function fetchFromGNews(query: string, apiKey: string): Promise<NewsArticle[]> {
+async function fetchFromGNews(
+  query: string,
+  apiKey: string,
+  prefix: string
+): Promise<NewsArticle[]> {
   const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(
     query
-  )}&lang=en&max=12&sortby=publishedAt&apikey=${encodeURIComponent(apiKey)}`;
+  )}&lang=en&max=9&sortby=publishedAt&apikey=${encodeURIComponent(apiKey)}`;
 
   const res = await fetch(url, { next: { revalidate: 900 } });
   if (!res.ok) {
@@ -115,22 +121,29 @@ async function fetchFromGNews(query: string, apiKey: string): Promise<NewsArticl
       const description = String(item.description || item.content || "").slice(0, 240);
       const sourceObj = item.source as { name?: string } | undefined;
       return {
-        id: `gnews-${idx}-${Buffer.from(String(item.url)).toString("base64").slice(0, 12)}`,
+        id: `${prefix}-gnews-${idx}-${Buffer.from(String(item.url)).toString("base64").slice(0, 12)}`,
         title,
-        description: description || "Read the full report for updated regional air quality insights.",
+        description:
+          description || "Read the full report for updated regional air quality insights.",
         url: String(item.url),
-        imageUrl: typeof item.image === "string" && item.image.startsWith("http") ? item.image : null,
+        imageUrl: null,
         source: sourceObj?.name ? String(sourceObj.name) : "Global News",
-        publishedAt: item.publishedAt ? new Date(String(item.publishedAt)).toISOString() : new Date().toISOString(),
+        publishedAt: item.publishedAt
+          ? new Date(String(item.publishedAt)).toISOString()
+          : new Date().toISOString(),
         category: classifyCategory(title, description),
       };
     });
 }
 
-async function fetchFromNewsApi(query: string, apiKey: string): Promise<NewsArticle[]> {
+async function fetchFromNewsApi(
+  query: string,
+  apiKey: string,
+  prefix: string
+): Promise<NewsArticle[]> {
   const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(
     query
-  )}&language=en&sortBy=publishedAt&pageSize=12&apiKey=${encodeURIComponent(apiKey)}`;
+  )}&language=en&sortBy=publishedAt&pageSize=9&apiKey=${encodeURIComponent(apiKey)}`;
 
   const res = await fetch(url, { next: { revalidate: 900 } });
   if (!res.ok) {
@@ -150,14 +163,12 @@ async function fetchFromNewsApi(query: string, apiKey: string): Promise<NewsArti
       const description = String(item.description || "").slice(0, 240);
       const sourceObj = item.source as { name?: string } | undefined;
       return {
-        id: `newsapi-${idx}-${Buffer.from(String(item.url)).toString("base64").slice(0, 12)}`,
+        id: `${prefix}-newsapi-${idx}-${Buffer.from(String(item.url)).toString("base64").slice(0, 12)}`,
         title,
-        description: description || "Read the full report for updated regional air quality insights.",
+        description:
+          description || "Read the full report for updated regional air quality insights.",
         url: String(item.url),
-        imageUrl:
-          typeof item.urlToImage === "string" && item.urlToImage.startsWith("http")
-            ? item.urlToImage
-            : null,
+        imageUrl: null,
         source: sourceObj?.name ? String(sourceObj.name) : "NewsWire",
         publishedAt: item.publishedAt
           ? new Date(String(item.publishedAt)).toISOString()
@@ -172,10 +183,12 @@ function extractXmlTag(block: string, tag: string): string {
   return match ? match[1].trim() : "";
 }
 
-async function fetchFromGoogleNewsRss(query: string): Promise<NewsArticle[]> {
-  const rssQuery = query || "air quality OR PM2.5 OR air pollution OR smog";
+async function fetchFromGoogleNewsRss(
+  query: string,
+  prefix: string
+): Promise<NewsArticle[]> {
   const url = `https://news.google.com/rss/search?q=${encodeURIComponent(
-    rssQuery
+    query
   )}&hl=en-US&gl=US&ceid=US:en`;
 
   const res = await fetch(url, {
@@ -193,7 +206,7 @@ async function fetchFromGoogleNewsRss(query: string): Promise<NewsArticle[]> {
   const itemMatches = xml.match(/<item>([\s\S]*?)<\/item>/gi) || [];
 
   const articles: NewsArticle[] = [];
-  for (let idx = 0; idx < Math.min(itemMatches.length, 15); idx++) {
+  for (let idx = 0; idx < Math.min(itemMatches.length, 12); idx++) {
     const block = itemMatches[idx];
     const rawTitle = stripTags(extractXmlTag(block, "title"));
     const link = decodeHtmlEntities(extractXmlTag(block, "link")).trim();
@@ -205,7 +218,6 @@ async function fetchFromGoogleNewsRss(query: string): Promise<NewsArticle[]> {
       continue;
     }
 
-    // Google News titles often end with " - Source Name"
     let cleanTitle = rawTitle;
     let sourceName = sourceTag || "Global Environmental Desk";
     const dashIndex = rawTitle.lastIndexOf(" - ");
@@ -227,7 +239,7 @@ async function fetchFromGoogleNewsRss(query: string): Promise<NewsArticle[]> {
       : parsedDate.toISOString();
 
     articles.push({
-      id: `rss-${idx}-${Buffer.from(link).toString("base64").slice(0, 12)}`,
+      id: `${prefix}-rss-${idx}-${Buffer.from(link).toString("base64").slice(0, 12)}`,
       title: cleanTitle,
       description: cleanDesc,
       url: link,
@@ -239,6 +251,43 @@ async function fetchFromGoogleNewsRss(query: string): Promise<NewsArticle[]> {
   }
 
   return articles;
+}
+
+async function fetchNewsByQuery(
+  query: string,
+  rssFallbackQuery: string,
+  prefix: string,
+  gnewsKey?: string,
+  newsApiKey?: string
+): Promise<{ articles: NewsArticle[]; source: "gnews" | "newsapi" | "rss_fallback" }> {
+  let articles: NewsArticle[] = [];
+  let source: "gnews" | "newsapi" | "rss_fallback" = "rss_fallback";
+
+  if (gnewsKey) {
+    try {
+      articles = await fetchFromGNews(query, gnewsKey, prefix);
+      source = "gnews";
+    } catch (err) {
+      console.warn(`GNews fetch failed (${prefix}), falling back to RSS:`, err);
+    }
+  } else if (newsApiKey) {
+    try {
+      articles = await fetchFromNewsApi(query, newsApiKey, prefix);
+      source = "newsapi";
+    } catch (err) {
+      console.warn(`NewsAPI fetch failed (${prefix}), falling back to RSS:`, err);
+    }
+  }
+
+  if (articles.length === 0) {
+    articles = await fetchFromGoogleNewsRss(rssFallbackQuery, prefix);
+    source = "rss_fallback";
+  }
+
+  return {
+    articles: sortArticlesByRelevanceAndDate(articles).slice(0, 9),
+    source,
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -264,7 +313,16 @@ export async function GET(request: NextRequest) {
 
   try {
     const rawQuery = request.nextUrl.searchParams.get("q") || undefined;
-    const validation = NewsQuerySchema.safeParse({ q: rawQuery });
+    const rawCity = request.nextUrl.searchParams.get("city") || undefined;
+    const rawCountry = request.nextUrl.searchParams.get("country") || undefined;
+    const rawLocation = request.nextUrl.searchParams.get("location") || undefined;
+
+    const validation = NewsQuerySchema.safeParse({
+      q: rawQuery,
+      city: rawCity,
+      country: rawCountry,
+      location: rawLocation,
+    });
 
     if (!validation.success) {
       return NextResponse.json(
@@ -273,41 +331,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const query = validation.data.q;
+    const { q: globalQuery, city, country, location } = validation.data;
+    const activeCity = (city || location || "").trim();
     const gnewsKey = process.env.GNEWS_API_KEY?.trim();
     const newsApiKey = process.env.NEWS_API_KEY?.trim();
 
-    let articles: NewsArticle[] = [];
-    let source: "gnews" | "newsapi" | "rss_fallback" = "rss_fallback";
+    const localQuery = activeCity
+      ? `"${activeCity}" ("air quality" OR "air pollution" OR smog OR PM2.5 OR AQI)`
+      : "";
+    const localRssQuery = activeCity
+      ? `${activeCity}${country ? ` ${country}` : ""} ("air quality" OR "air pollution" OR smog OR PM2.5)`
+      : "";
 
-    if (gnewsKey) {
-      try {
-        articles = await fetchFromGNews(query, gnewsKey);
-        source = "gnews";
-      } catch (err) {
-        console.warn("GNews fetch failed, falling back to RSS:", err);
-      }
-    } else if (newsApiKey) {
-      try {
-        articles = await fetchFromNewsApi(query, newsApiKey);
-        source = "newsapi";
-      } catch (err) {
-        console.warn("NewsAPI fetch failed, falling back to RSS:", err);
-      }
-    }
-
-    if (articles.length === 0) {
-      articles = await fetchFromGoogleNewsRss(
-        "air quality OR PM2.5 OR urban smog OR air pollution"
-      );
-      source = "rss_fallback";
-    }
-
-    const sortedArticles = sortArticlesByRelevanceAndDate(articles).slice(0, 12);
+    const [globalResult, localResult] = await Promise.all([
+      fetchNewsByQuery(
+        globalQuery,
+        "air quality OR PM2.5 OR urban smog OR air pollution",
+        "global",
+        gnewsKey,
+        newsApiKey
+      ),
+      activeCity
+        ? fetchNewsByQuery(
+            localQuery,
+            localRssQuery,
+            "local",
+            gnewsKey,
+            newsApiKey
+          ).catch((err) => {
+            console.warn(`Local news fetch failed for ${activeCity}:`, err);
+            return { articles: [] as NewsArticle[], source: "rss_fallback" as const };
+          })
+        : Promise.resolve({ articles: [] as NewsArticle[], source: "rss_fallback" as const }),
+    ]);
 
     const payload = NewsResponseSchema.parse({
-      articles: sortedArticles,
-      source,
+      localNews: localResult.articles,
+      globalNews: globalResult.articles,
+      locationName: activeCity || undefined,
+      source: globalResult.source,
       fetchedAt: new Date().toISOString(),
     });
 

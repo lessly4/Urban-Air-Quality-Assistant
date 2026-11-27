@@ -6,11 +6,16 @@ import {
   ExternalLink,
   RefreshCw,
   AlertCircle,
-  Wind,
   Calendar,
   Globe,
+  MapPin,
 } from "lucide-react";
 import { NewsArticle, NewsCategory, NewsResponse } from "@/types/airQuality";
+
+interface AirQualityNewsSectionProps {
+  locationName: string;
+  countryName?: string;
+}
 
 const CATEGORY_FILTERS: { id: NewsCategory | "all"; label: string }[] = [
   { id: "all", label: "All Coverage" },
@@ -38,49 +43,113 @@ function formatPublishedDate(isoString: string): string {
   }
 }
 
-const ArticleThumbnail: React.FC<{
-  imageUrl: string | null;
-  title: string;
-  category: NewsCategory;
-}> = ({ imageUrl, title, category }) => {
-  const [hasError, setHasError] = useState(false);
+function getCategoryStyle(category: NewsCategory): string {
+  switch (category) {
+    case "AQI":
+      return "bg-amber-950/60 text-amber-300 border-amber-500/40";
+    case "Health":
+      return "bg-rose-950/60 text-rose-300 border-rose-500/40";
+    case "Policy":
+      return "bg-emerald-950/60 text-emerald-300 border-emerald-500/40";
+    case "Pollution":
+    default:
+      return "bg-[#2F4A3F]/70 text-[#DCE7DF] border-[#94AE9F]/40";
+  }
+}
 
-  if (!imageUrl || hasError) {
-    return (
-      <div className="h-36 w-full bg-gradient-to-br from-[#0F1A16] via-[#1C2E27] to-[#2F4A3F]/80 border-b border-[#2F4A3F]/70 flex flex-col items-center justify-center gap-2 relative overflow-hidden">
-        <div className="h-10 w-10 rounded-xl bg-[#2F4A3F]/60 border border-[#94AE9F]/30 flex items-center justify-center text-[#94AE9F]">
-          <Wind className="h-5 w-5" aria-hidden="true" />
-        </div>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#557566]">
-          Global {category} Dispatch
+const EditorialNewsCard: React.FC<{ article: NewsArticle }> = ({ article }) => (
+  <article className="group bg-[#1C2E27]/60 backdrop-blur-md rounded-2xl border border-[#2F4A3F]/80 p-5 shadow-xl flex flex-col justify-between gap-4 hover:border-[#94AE9F]/70 transition-all">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <span
+          className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${getCategoryStyle(
+            article.category
+          )}`}
+        >
+          {article.category}
+        </span>
+
+        <span className="text-[11px] text-[#557566] flex items-center gap-1">
+          <Calendar className="h-3 w-3" aria-hidden="true" />
+          {formatPublishedDate(article.publishedAt)}
         </span>
       </div>
-    );
-  }
 
-  return (
-    <div className="h-36 w-full overflow-hidden border-b border-[#2F4A3F]/70 bg-[#0F1A16]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={imageUrl}
-        alt={title}
-        loading="lazy"
-        onError={() => setHasError(true)}
-        className="h-full w-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-      />
+      <h4 className="text-sm font-bold text-[#DCE7DF] leading-snug line-clamp-2 group-hover:text-white transition-colors">
+        {article.title}
+      </h4>
+
+      <p className="text-xs text-[#94AE9F] leading-relaxed line-clamp-3">
+        {article.description}
+      </p>
     </div>
-  );
-};
 
-export const AirQualityNewsSection: React.FC = () => {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
+    <div className="pt-3.5 border-t border-[#2F4A3F]/60 flex items-center justify-between gap-2">
+      <span className="text-[11px] font-semibold text-[#557566] truncate max-w-[58%]">
+        {article.source}
+      </span>
+
+      <a
+        href={article.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#DCE7DF] hover:text-white px-2.5 py-1 rounded-lg bg-[#2F4A3F]/50 border border-[#94AE9F]/40 hover:border-[#94AE9F] transition-all shrink-0"
+      >
+        <span>Read Article</span>
+        <ExternalLink className="h-3 w-3 text-[#94AE9F]" aria-hidden="true" />
+      </a>
+    </div>
+  </article>
+);
+
+const NewsSkeletonGrid: React.FC<{ count?: number; label: string }> = ({
+  count = 3,
+  label,
+}) => (
+  <div aria-label={label} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {Array.from({ length: count }).map((_, idx) => (
+      <div
+        key={idx}
+        className="rounded-2xl bg-[#1C2E27]/40 border border-[#2F4A3F]/60 p-5 space-y-3 animate-pulse"
+      >
+        <div className="flex items-center justify-between">
+          <div className="h-4 w-16 rounded-full bg-[#2F4A3F]/60" />
+          <div className="h-3 w-20 rounded bg-[#2F4A3F]/50" />
+        </div>
+        <div className="h-4 w-full rounded bg-[#2F4A3F]/70" />
+        <div className="h-4 w-4/5 rounded bg-[#2F4A3F]/70" />
+        <div className="h-3 w-full rounded bg-[#2F4A3F]/50" />
+        <div className="h-3 w-2/3 rounded bg-[#2F4A3F]/50" />
+        <div className="pt-3 border-t border-[#2F4A3F]/50 flex justify-between items-center">
+          <div className="h-3 w-24 rounded bg-[#2F4A3F]/50" />
+          <div className="h-6 w-24 rounded-lg bg-[#2F4A3F]/60" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+export const AirQualityNewsSection: React.FC<AirQualityNewsSectionProps> = ({
+  locationName,
+  countryName,
+}) => {
+  const locationKey = `${locationName}|${countryName || ""}`;
+  const [localNews, setLocalNews] = useState<NewsArticle[]>([]);
+  const [globalNews, setGlobalNews] = useState<NewsArticle[]>([]);
   const [sourceLabel, setSourceLabel] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [fetchedKey, setFetchedKey] = useState<string>("");
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory | "all">("all");
 
-  const loadNewsPayload = useCallback(async () => {
-    const res = await fetch("/api/news");
+  const isLoading = isRefreshing || fetchedKey !== locationKey;
+
+  const loadNewsPayload = useCallback(async (city: string, country?: string) => {
+    const params = new URLSearchParams();
+    if (city) params.set("city", city);
+    if (country) params.set("country", country);
+
+    const res = await fetch(`/api/news?${params.toString()}`);
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));
       throw new Error(
@@ -89,41 +158,45 @@ export const AirQualityNewsSection: React.FC = () => {
     }
     const data: NewsResponse = await res.json();
     return {
-      articles: data.articles || [],
+      localNews: data.localNews || [],
+      globalNews: data.globalNews || [],
       sourceLabel:
         data.source === "rss_fallback"
-          ? "Live Global RSS Feed"
+          ? "Live RSS Feed"
           : data.source === "gnews"
           ? "GNews Live Wire"
           : "NewsAPI Live Wire",
     };
   }, []);
 
-  const fetchNews = useCallback(async () => {
-    setIsLoading(true);
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
     setErrorMessage(null);
     try {
-      const result = await loadNewsPayload();
-      setArticles(result.articles);
+      const result = await loadNewsPayload(locationName, countryName);
+      setLocalNews(result.localNews);
+      setGlobalNews(result.globalNews);
       setSourceLabel(result.sourceLabel);
+      setFetchedKey(locationKey);
     } catch (err: unknown) {
       setErrorMessage(
         err instanceof Error
           ? err.message
-          : "Unable to connect to global air quality news feed."
+          : "Unable to connect to air quality news feed."
       );
     } finally {
-      setIsLoading(false);
+      setIsRefreshing(false);
     }
-  }, [loadNewsPayload]);
+  }, [loadNewsPayload, locationName, countryName, locationKey]);
 
   useEffect(() => {
     let isCancelled = false;
 
-    loadNewsPayload()
+    loadNewsPayload(locationName, countryName)
       .then((result) => {
         if (isCancelled) return;
-        setArticles(result.articles);
+        setLocalNews(result.localNews);
+        setGlobalNews(result.globalNews);
         setSourceLabel(result.sourceLabel);
         setErrorMessage(null);
       })
@@ -132,48 +205,37 @@ export const AirQualityNewsSection: React.FC = () => {
         setErrorMessage(
           err instanceof Error
             ? err.message
-            : "Unable to connect to global air quality news feed."
+            : "Unable to connect to air quality news feed."
         );
       })
       .finally(() => {
         if (!isCancelled) {
-          setIsLoading(false);
+          setFetchedKey(locationKey);
         }
       });
 
     return () => {
       isCancelled = true;
     };
-  }, [loadNewsPayload]);
+  }, [loadNewsPayload, locationName, countryName, locationKey]);
 
-  const filteredArticles =
+  const filterByCategory = (items: NewsArticle[]) =>
     selectedCategory === "all"
-      ? articles
-      : articles.filter((a) => a.category === selectedCategory);
+      ? items
+      : items.filter((a) => a.category === selectedCategory);
 
-  const getCategoryStyle = (category: NewsCategory) => {
-    switch (category) {
-      case "AQI":
-        return "bg-amber-950/60 text-amber-300 border-amber-500/40";
-      case "Health":
-        return "bg-rose-950/60 text-rose-300 border-rose-500/40";
-      case "Policy":
-        return "bg-emerald-950/60 text-emerald-300 border-emerald-500/40";
-      case "Pollution":
-      default:
-        return "bg-[#2F4A3F]/70 text-[#DCE7DF] border-[#94AE9F]/40";
-    }
-  };
+  const filteredLocal = filterByCategory(localNews);
+  const filteredGlobal = filterByCategory(globalNews);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Section Header & Controls */}
       <div className="bg-[#1C2E27]/60 backdrop-blur-md rounded-2xl border border-[#2F4A3F]/80 p-5 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <Newspaper className="h-5 w-5 text-[#94AE9F]" aria-hidden="true" />
             <h2 className="text-lg font-bold text-[#DCE7DF] tracking-tight">
-              Global Air Quality &amp; Clean-Air Dispatch
+              Local &amp; Global Air Quality Dispatch
             </h2>
             {sourceLabel && (
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#0F1A16]/70 text-[#94AE9F] border border-[#2F4A3F]">
@@ -183,12 +245,11 @@ export const AirQualityNewsSection: React.FC = () => {
             )}
           </div>
           <p className="text-xs text-[#94AE9F]/80 mt-1">
-            Live international coverage on urban smog events, respiratory research, and municipal clean-air policies
+            Regional alerts for <strong className="text-[#DCE7DF]">{locationName}</strong> alongside global urban smog &amp; clean-air reporting
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Topic Filter Pills */}
           <div
             role="tablist"
             aria-label="Filter air quality news by topic"
@@ -217,9 +278,9 @@ export const AirQualityNewsSection: React.FC = () => {
 
           <button
             type="button"
-            onClick={fetchNews}
+            onClick={handleRefresh}
             disabled={isLoading}
-            aria-label="Refresh global air quality news"
+            aria-label="Refresh air quality news"
             className="px-3 py-1.5 rounded-full border border-[#2F4A3F] bg-[#0F1A16]/70 text-[#DCE7DF] hover:border-[#94AE9F] text-xs font-medium flex items-center gap-1.5 transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#94AE9F]/40"
           >
             <RefreshCw
@@ -243,7 +304,7 @@ export const AirQualityNewsSection: React.FC = () => {
           </div>
           <button
             type="button"
-            onClick={fetchNews}
+            onClick={handleRefresh}
             className="px-3.5 py-1.5 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-500 transition-colors self-start sm:self-center"
           >
             Retry
@@ -251,102 +312,92 @@ export const AirQualityNewsSection: React.FC = () => {
         </div>
       )}
 
-      {/* Loading State */}
-      {isLoading ? (
-        <div
-          aria-label="Loading air quality news"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-        >
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div
-              key={n}
-              className="rounded-2xl bg-[#1C2E27]/40 border border-[#2F4A3F]/60 overflow-hidden animate-pulse"
-            >
-              <div className="h-36 w-full bg-[#2F4A3F]/40" />
-              <div className="p-5 space-y-3">
-                <div className="h-3 w-24 rounded bg-[#2F4A3F]/60" />
-                <div className="h-4 w-full rounded bg-[#2F4A3F]/70" />
-                <div className="h-4 w-3/4 rounded bg-[#2F4A3F]/70" />
-                <div className="h-3 w-full rounded bg-[#2F4A3F]/50" />
-              </div>
-            </div>
-          ))}
+      {/* 1. Local Air Quality News Section */}
+      <section aria-labelledby="local-news-heading" className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-[#94AE9F]" aria-hidden="true" />
+            <h3 id="local-news-heading" className="text-base font-bold text-[#DCE7DF]">
+              Local Air Quality News — {locationName}
+            </h3>
+          </div>
+          {!isLoading && (
+            <span className="text-[11px] font-medium text-[#557566]">
+              {filteredLocal.length} {filteredLocal.length === 1 ? "story" : "stories"}
+            </span>
+          )}
         </div>
-      ) : !errorMessage && filteredArticles.length === 0 ? (
-        /* Empty State */
-        <div className="text-center py-14 rounded-2xl border border-dashed border-[#2F4A3F] bg-[#1C2E27]/30 p-8 space-y-3">
-          <Newspaper className="h-8 w-8 text-[#557566] mx-auto" aria-hidden="true" />
-          <p className="text-sm font-medium text-[#DCE7DF]">
-            No air quality news articles found for this filter.
-          </p>
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("all")}
-            className="text-xs px-3.5 py-1.5 rounded-full bg-[#2F4A3F]/60 border border-[#94AE9F]/40 text-[#DCE7DF] hover:border-[#94AE9F] transition-all"
-          >
-            Show All Coverage
-          </button>
+
+        {isLoading ? (
+          <NewsSkeletonGrid count={3} label={`Loading local air quality news for ${locationName}`} />
+        ) : !errorMessage && filteredLocal.length === 0 ? (
+          <div className="text-center py-10 rounded-2xl border border-dashed border-[#2F4A3F] bg-[#1C2E27]/30 p-6 space-y-2">
+            <p className="text-sm font-medium text-[#DCE7DF]">
+              No recent local air quality news found for {locationName}.
+            </p>
+            {selectedCategory !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("all")}
+                className="text-xs px-3 py-1 rounded-full bg-[#2F4A3F]/60 border border-[#94AE9F]/40 text-[#DCE7DF] hover:border-[#94AE9F] transition-all"
+              >
+                Show All Topics
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredLocal.map((article) => (
+              <EditorialNewsCard key={article.id} article={article} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Divider */}
+      <div className="border-t border-[#2F4A3F]/60" aria-hidden="true" />
+
+      {/* 2. Global Air Quality News Section */}
+      <section aria-labelledby="global-news-heading" className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-[#94AE9F]" aria-hidden="true" />
+            <h3 id="global-news-heading" className="text-base font-bold text-[#DCE7DF]">
+              Global Air Quality News
+            </h3>
+          </div>
+          {!isLoading && (
+            <span className="text-[11px] font-medium text-[#557566]">
+              {filteredGlobal.length} {filteredGlobal.length === 1 ? "story" : "stories"}
+            </span>
+          )}
         </div>
-      ) : (
-        /* Responsive News Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredArticles.map((article) => (
-            <article
-              key={article.id}
-              className="group bg-[#1C2E27]/60 backdrop-blur-md rounded-2xl border border-[#2F4A3F]/80 overflow-hidden shadow-xl flex flex-col justify-between hover:border-[#94AE9F]/70 transition-all"
-            >
-              <div>
-                <ArticleThumbnail
-                  imageUrl={article.imageUrl}
-                  title={article.title}
-                  category={article.category}
-                />
 
-                <div className="p-5 space-y-2.5">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${getCategoryStyle(
-                        article.category
-                      )}`}
-                    >
-                      {article.category}
-                    </span>
-
-                    <span className="text-[11px] text-[#557566] flex items-center gap-1">
-                      <Calendar className="h-3 w-3" aria-hidden="true" />
-                      {formatPublishedDate(article.publishedAt)}
-                    </span>
-                  </div>
-
-                  <h3 className="text-sm font-bold text-[#DCE7DF] leading-snug line-clamp-2 group-hover:text-white transition-colors">
-                    {article.title}
-                  </h3>
-
-                  <p className="text-xs text-[#94AE9F] leading-relaxed line-clamp-3">
-                    {article.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-5 py-3.5 border-t border-[#2F4A3F]/60 bg-[#0F1A16]/40 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-semibold text-[#557566] truncate max-w-[60%]">
-                  {article.source}
-                </span>
-
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#DCE7DF] hover:text-white px-2.5 py-1 rounded-lg bg-[#2F4A3F]/50 border border-[#94AE9F]/40 hover:border-[#94AE9F] transition-all shrink-0"
-                >
-                  <span>Read Article</span>
-                  <ExternalLink className="h-3 w-3 text-[#94AE9F]" aria-hidden="true" />
-                </a>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+        {isLoading ? (
+          <NewsSkeletonGrid count={6} label="Loading global air quality news" />
+        ) : !errorMessage && filteredGlobal.length === 0 ? (
+          <div className="text-center py-10 rounded-2xl border border-dashed border-[#2F4A3F] bg-[#1C2E27]/30 p-6 space-y-2">
+            <p className="text-sm font-medium text-[#DCE7DF]">
+              No global air quality news articles found for this filter.
+            </p>
+            {selectedCategory !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("all")}
+                className="text-xs px-3 py-1 rounded-full bg-[#2F4A3F]/60 border border-[#94AE9F]/40 text-[#DCE7DF] hover:border-[#94AE9F] transition-all"
+              >
+                Show All Coverage
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredGlobal.map((article) => (
+              <EditorialNewsCard key={article.id} article={article} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

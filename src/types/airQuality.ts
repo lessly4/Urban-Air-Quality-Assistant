@@ -313,13 +313,17 @@ export const NewsArticleSchema = z.object({
 });
 
 export interface NewsResponse {
-  articles: NewsArticle[];
+  localNews: NewsArticle[];
+  globalNews: NewsArticle[];
+  locationName?: string;
   source: "gnews" | "newsapi" | "rss_fallback";
   fetchedAt: string;
 }
 
 export const NewsResponseSchema = z.object({
-  articles: z.array(NewsArticleSchema),
+  localNews: z.array(NewsArticleSchema),
+  globalNews: z.array(NewsArticleSchema),
+  locationName: z.string().optional(),
   source: z.enum(["gnews", "newsapi", "rss_fallback"]),
   fetchedAt: z.string(),
 });

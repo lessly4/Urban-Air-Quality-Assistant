@@ -246,15 +246,18 @@ export default function Home() {
               </section>
             )}
 
-            {/* VIEW 4: Global Air News */}
+            {/* VIEW 4: Global & Local Air News */}
             {activeView === "global_news" && (
               <section
                 id="tabpanel-global_news"
                 role="tabpanel"
-                aria-label="Global Air Quality News"
+                aria-label="Local and Global Air Quality News"
                 className="animate-fadeIn"
               >
-                <AirQualityNewsSection />
+                <AirQualityNewsSection
+                  locationName={location.name}
+                  countryName={location.country}
+                />
               </section>
             )}
           </>
